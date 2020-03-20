@@ -3,12 +3,13 @@ const express = require("express");
 const path = require("path");
 const fs = require("fs");
 const dbFile = "./db/db.json";
-const notesData = require(dbFile);
+var notesDb = require(dbFile);
 
 // Sets up the Express App
 var app = express();
 var PORT = process.env.PORT || 3000;
 
+// Make public directory accessible
 app.use(express.static(path.join(__dirname, 'public')))
 
 // Sets up the Express app to handle data parsing
@@ -31,17 +32,25 @@ app.get("/api/notes", function (req, res) {
   res.sendFile(path.join(__dirname, dbFile));
 });
 
+// Displays a single note, or returns message
+app.get("/api/notes/:noteID", function(req, res) {
+  
+  var chosen = req.params.noteID;
+  console.log(chosen);
 
-app.post("/api/notes", function(req, res) {
-    tableData.push(req.body);
+  for (let i = 0; i < notesDb.length; i++) {
+    if (chosen == notesDb[i].id) {
+      return res.json(notesDb[i]);
+    }
+  }
+  return res.json('No record found');
 });
 
+// Create New note - takes in JSON input
 app.post("/api/notes", function(req, res) {
-  let newNote = req.body;
-  newNote.routeName = newNote.name.replace(/\s+/g, "").toLowerCase();
+  var newNote = req.body;
   console.log(newNote);
-  notesData.push(newNote);
-  console.log(newNote);
+  notesDb.push(newNote);
   res.json(newNote);
 });
 
