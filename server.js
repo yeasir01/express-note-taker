@@ -2,15 +2,13 @@
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
-const dbFile = "./db/db.json";
-var notesDb = require(dbFile);
-
+var notes;
 // Sets up the Express App
-var app = express();
-var PORT = process.env.PORT || 3000;
+const app = express();
+const PORT = process.env.PORT || 3000;
 
 // Make public directory accessible
-app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.static(path.join(__dirname, './public')))
 
 // Sets up the Express app to handle data parsing
 app.use(express.urlencoded({
@@ -24,34 +22,39 @@ app.get("/", function (req, res) {
   res.sendFile(path.join(__dirname, "./public/index.html"));
 });
 
-app.get("/notes", function (req, res) {
-  res.sendFile(path.join(__dirname, "./public/notes.html"));
+
+fs.readFile("db/db.json", "utf8", function (err, data) {
+  notes = JSON.parse(data);
 });
 
 app.get("/api/notes", function (req, res) {
-  res.sendFile(path.join(__dirname, dbFile));
+  res.json(notes);
 });
 
-// Displays a single note, or returns message
-app.get("/api/notes/:noteID", function(req, res) {
-  
-  var chosen = req.params.noteID;
-  console.log(chosen);
-
-  for (let i = 0; i < notesDb.length; i++) {
-    if (chosen == notesDb[i].id) {
-      return res.json(notesDb[i]);
-    }
-  }
-  return res.json('No record found');
-});
-
-// Create New note - takes in JSON input
-app.post("/api/notes", function(req, res) {
+app.post("/api/notes", function (req, res) {
   var newNote = req.body;
-  console.log(newNote);
-  notesDb.push(newNote);
-  res.json(newNote);
+  newNote.id = notes.length;
+  notes.push(newNote);
+  saveNotes();
+  res.json({ success: true });
+});
+
+app.delete("/api/notes/:id", function (req, res) {
+  notes = notes.filter((note) => note.id !== parseInt(req.params.id));
+  saveNotes();
+  res.json({ success: true });
+});
+
+function saveNotes() {
+  fs.writeFile("db/db.json", JSON.stringify(notes), function (err) {
+    if (err) throw err;
+    console.log("notes saved");
+  });
+}
+
+
+app.get("/notes", function (req, res) {
+  res.sendFile(path.join(__dirname, "./public/notes.html"));
 });
 
 // Starts the server to begin listening
