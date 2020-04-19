@@ -5,7 +5,6 @@ A notes app used to store your todos. This project uses a JSON file & the node f
 * [Installation](#Installation)
 * [Technologies](#Technologies)
 * [License](#License)
-* [Tests](#tests)
 ## Installation
 Install NodeJS. 
 Run npm i from project directory to install dependancies, then node index to run locally.
